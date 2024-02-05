@@ -1,4 +1,4 @@
-# PoABOT - Power of Algorithm
+# PoABOT - Korea Futures Included ver.
 
 ## 트레이딩뷰에서 전달되는 웹훅을 처리하는 봇입니다.
 
