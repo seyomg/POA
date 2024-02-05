@@ -1,3 +1,4 @@
+#선물기능 추가 오늘부터 시작!02.05
 from fastapi.exception_handlers import (
     request_validation_exception_handler,
 )
