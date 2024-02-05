@@ -72,7 +72,8 @@ NO_ORDER_AMOUNT_OUTPUT_EXCHANGES = (
 )
 
 # "BITGET", "KRX", "NASDAQ", "AMEX", "NYSE")
-
+#Edited: 국선 티커 추가(트뷰티커)
+korea_futures_ticker = ("MINIFKOSPI200", "KOSPI200FUT", "F_KOSDAQ150")
 
 crypto_futures_code = ("PERP", ".P")
 
@@ -121,12 +122,13 @@ class Settings(BaseSettings):
         env_file = env_path  # ".env"
         env_file_encoding = "utf-8"
 
-
+#Edited: is_korea_futures 조건 추가
 def get_extra_order_info(order_info):
     extra_order_info = {
         "is_futures": None,
         "is_crypto": None,
         "is_stock": None,
+        "is_korea_futures": None,
         "is_spot": None,
         "is_entry": None,
         "is_close": None,
@@ -140,8 +142,11 @@ def get_extra_order_info(order_info):
         else:
             extra_order_info["is_spot"] = True
 
+    #Edited: 국선 조건 추가
     elif order_info["exchange"] in STOCK_EXCHANGES:
         extra_order_info["is_stock"] = True
+        if order_info["base"] in korea_futures_ticker:
+            extra_order_info["is_korea_futures"] = True
 
     if order_info["side"] in ("entry/buy", "entry/sell"):
         extra_order_info["is_entry"] = True
@@ -178,7 +183,7 @@ def parse_quote(quote: str):
     else:
         return quote
 
-
+#Edited: 국선 조건 추가
 class OrderRequest(BaseModel):
     exchange: EXCHANGE_LITERAL
     base: str
@@ -200,6 +205,7 @@ class OrderRequest(BaseModel):
     unified_symbol: str | None = None
     is_crypto: bool | None = None
     is_stock: bool | None = None
+    is_korea_futures: bool | None = None
     is_spot: bool | None = None
     is_futures: bool | None = None
     is_coinm: bool | None = None
@@ -239,8 +245,11 @@ class OrderRequest(BaseModel):
         if not values["is_stock"]:
             values["unified_symbol"] = unified_symbol
 
+        #Edited:국선조건 추가
         if values["exchange"] in STOCK_EXCHANGES:
             values["is_stock"] = True
+            if values["base"] in korea_futures_ticker:
+                values["is_korea_futures"] = True
         # debug("after", values)
         return values
 
@@ -260,7 +269,7 @@ class MarketOrder(OrderBase):
     price: float | None = None
     type: Literal["market"] = "market"
 
-
+#Edited: 국선조건 추가
 class PriceRequest(BaseModel):
     exchange: EXCHANGE_LITERAL
     base: str
@@ -268,6 +277,7 @@ class PriceRequest(BaseModel):
     is_crypto: bool | None = None
     is_stock: bool | None = None
     is_futures: bool | None = None
+    is_korea_futures: bool | None = None
 
     @root_validator(pre=True)
     def root_validate(cls, values):
