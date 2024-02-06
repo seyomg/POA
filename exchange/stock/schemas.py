@@ -19,11 +19,16 @@ class BaseHeaders(BaseModel):
     # tr_id: str = Literal[TransactionId.korea_buy, TransactionId.korea_sell, TransactionId.korea_paper_buy, TransactionId.korea_paper_sell,
     #  TransactionId.korea_paper_cancel, TransactionId.usa_buy, TransactionId.usa_sell, TransactionId.usa_paper_buy, TransactionId.usa_paper_sell]
 
-
+#Edited: 국선 endpoint 추가
 class Endpoints(str, Enum):
     korea_order_base = "/uapi/domestic-stock/v1"
     korea_order = f"{korea_order_base}/trading/order-cash"
     korea_order_buyable = f"{korea_order_base}/trading/inquire-psbl-order"
+
+    #추가
+    korea_futures_order_base = "/uapi/domestic-futureoption/v1"
+    korea_futures_order = f"{korea_futures_order_base}/trading/order"
+    korea_futures_order_buyable = f"{korea_futures_order_base}trading/inquire-psbl-order"
 
     usa_order_base = "/uapi/overseas-stock/v1"
     usa_order = f"{usa_order_base}/trading/order"
@@ -33,7 +38,7 @@ class Endpoints(str, Enum):
     korea_ticker = "/uapi/domestic-stock/v1/quotations/inquire-price"
     usa_ticker = "/uapi/overseas-price/v1/quotations/price"
 
-
+#Edited: 국선 TrId추가
 class TransactionId(str, Enum):
 
     korea_buy = "TTTC0802U"
@@ -43,6 +48,9 @@ class TransactionId(str, Enum):
     korea_paper_sell = "VTTC0801U"
     korea_paper_cancel = "VTTC0803U"
 
+    #주간
+    korea_futures_buy_and_sell = "TTTO1101U"
+
     usa_buy = "JTTT1002U"
     usa_sell = "JTTT1006U"
 
@@ -50,11 +58,13 @@ class TransactionId(str, Enum):
     usa_paper_sell = "VTTT1001U"
 
     korea_ticker = "FHKST01010100"
+    #Edited: 국선시세조회 tr_id
+    korea_futures_ticker = "FHMIF10000000"
     usa_ticker = "HHDFS00000300"
 
-
+#Edited: 시세조회 인자는 주식, 국선 동일 but 국선 Description 추가
 class KoreaTickerQuery(BaseModel):
-    FID_COND_MRKT_DIV_CODE: str = "J"
+    FID_COND_MRKT_DIV_CODE: Literal["J", "F"]
     FID_INPUT_ISCD: str
 
 
@@ -80,6 +90,11 @@ class KoreaOrderType(str, Enum):
     market = "01"   # 시장가
     limit = "00"    # 지정가
 
+#Edited: 국선 주문유형 추가
+class KoreaFuturesOrderType(str, Enum):
+    market = "02"   # 시장가
+    limit = "01"    # 지정가
+
 
 class UsaOrderType(str, Enum):
     limit = "00"    # 지정가
@@ -97,6 +112,10 @@ class TokenInfo(BaseModel):
 
 class KoreaTickerHeaders(BaseHeaders):
     tr_id: str = TransactionId.korea_ticker.value
+
+#Edited: 추가됨
+class KoreaFuturesTickerHeaders(BaseHeaders):
+    tr_id: str = TransactionId.korea_futures_ticker.value
 
 
 class UsaTickerHeaders(BaseHeaders):
@@ -117,6 +136,10 @@ class KoreaPaperBuyOrderHeaders(BaseHeaders):
 
 class KoreaPaperSellOrderHeaders(BaseHeaders):
     tr_id: str = TransactionId.korea_paper_sell.value
+
+#Edited: 추가됨
+class KoreaFuturesBuySellOrderHeaders(BaseHeaders):
+    tr_id: str = TransactionId.korea_futures_buy_and_sell.value
 
 
 class UsaBuyOrderHeaders(BaseHeaders):
@@ -156,6 +179,19 @@ class KoreaOrderBody(OrderBody):
 class KoreaMarketOrderBody(KoreaOrderBody):
     ORD_DVSN: str = KoreaOrderType.market.value
     ORD_UNPR: str = "0"
+
+#Edited: 국선 추가
+class KoreaFuturesOrderBody(AccountInfo):
+    ORD_PRCS_DVSN_CD: "02"
+    SLL_BUY_DVSN_CD: Literal["01", "02"]     # 01: 매도, 02매수
+    SHTN_PDNO: str
+    ORD_QTY: str
+    UNIT_PRICE: str = "0"
+    NMPR_TYPE_CD: Literal[f"{KoreaFuturesOrderType.market}", f"{KoreaFuturesOrderType.limit}"]
+    KRX_NMPR_CNDT_CD: Literal["0", "3", "4"]    # 0: 없음, 3:IOC, 4:FOK
+    CTAC_TLNO: str
+    FUOP_ITEM_DVSN_CD: str
+    ORD_DVSN_CD: Literal[f"{KoreaFuturesOrderType.market}", f"{KoreaFuturesOrderType.limit}"]
 
 
 class UsaOrderBody(OrderBody):
