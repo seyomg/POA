@@ -38,6 +38,8 @@ class Endpoints(str, Enum):
     korea_ticker = "/uapi/domestic-stock/v1/quotations/inquire-price"
     usa_ticker = "/uapi/overseas-price/v1/quotations/price"
 
+    korea_futures_ticker = "/uapi/domestic-futureoption/v1/quotations/inquire-price"
+
 #Edited: 국선 TrId추가
 class TransactionId(str, Enum):
 
