@@ -140,27 +140,45 @@ class KoreaInvestment:
         price: int = 0,
         mintick=0.01,
     ):
-        endpoint = Endpoints.korea_order.value if exchange == "KRX" else Endpoints.usa_order.value
+        #Edited: endpoints 국선 추가
+        futures_codes = ["101V", "105V", "106V"]
+        if exchange == "KRX":
+            if any(ticker.startswith(code) for code in futures_codes):
+                endpoint = Endpoints.korea_futures_order.value
+            else:
+                endpoint = Endpoints.korea_order.value
+        else:
+            endpoint = Endpoints.usa_order.value
         body = self.base_order_body.dict()
         headers = copy.deepcopy(self.base_headers)
         price = str(price)
 
         amount = str(int(amount))
-
+        
+        #Edited: 국선일 경우 header와 body 조건 추가
         if exchange == "KRX":
-            if self.base_url == BaseUrls.base_url:
-                headers |= KoreaBuyOrderHeaders(**headers) if side == "buy" else KoreaSellOrderHeaders(**headers)
-            elif self.base_url == BaseUrls.paper_base_url:
-                headers |= (
-                    KoreaPaperBuyOrderHeaders(**headers) if side == "buy" else KoreaPaperSellOrderHeaders(**headers)
-                )
+            if any(ticker.startswith(code) for code in futures_codes):
+                headers |= KoreaFuturesBuySellOrderHeaders(**headers)
+                if side == "buy":
+                    #일단 계약수는 1로 제한
+                    body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="02", SHTN_PDNO=ticker, ORD_QTY="1", ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
+                else:
+                    #일단 계약수는 1로 제한
+                    body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="01", SHTN_PDNO=ticker, ORD_QTY="1", ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
+            else:
+                if self.base_url == BaseUrls.base_url:
+                    headers |= KoreaBuyOrderHeaders(**headers) if side == "buy" else KoreaSellOrderHeaders(**headers)
+                elif self.base_url == BaseUrls.paper_base_url:
+                    headers |= (
+                        KoreaPaperBuyOrderHeaders(**headers) if side == "buy" else KoreaPaperSellOrderHeaders(**headers)
+                    )
 
-            if order_type == "market":
-                body |= KoreaMarketOrderBody(**body, PDNO=ticker, ORD_QTY=amount)
-            elif order_type == "limit":
-                body |= KoreaOrderBody(
-                    **body, PDNO=ticker, ORD_DVSN=KoreaOrderType.limit, ORD_QTY=amount, ORD_UNPR=price
-                )
+                if order_type == "market":
+                    body |= KoreaMarketOrderBody(**body, PDNO=ticker, ORD_QTY=amount)
+                elif order_type == "limit":
+                    body |= KoreaOrderBody(
+                        **body, PDNO=ticker, ORD_DVSN=KoreaOrderType.limit, ORD_QTY=amount, ORD_UNPR=price
+                    )
         elif exchange in ("NASDAQ", "NYSE", "AMEX"):
             exchange_code = self.order_exchange_code.get(exchange)
             current_price = self.fetch_current_price(exchange, ticker)

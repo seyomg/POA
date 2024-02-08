@@ -191,7 +191,7 @@ class KoreaFuturesOrderBody(AccountInfo):
     UNIT_PRICE: str = "0"
     # NMPR_TYPE_CD: Literal[f"{KoreaFuturesOrderType.market}", f"{KoreaFuturesOrderType.limit}"]
     # KRX_NMPR_CNDT_CD: Literal["0", "3", "4"]    # 0: 없음, 3:IOC, 4:FOK
-    CTAC_TLNO: str
+    # CTAC_TLNO: str = ""
     FUOP_ITEM_DVSN_CD: str
     ORD_DVSN_CD: Literal[f"{KoreaFuturesOrderType.market}", f"{KoreaFuturesOrderType.limit}"]
 
