@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 from enum import Enum
 from devtools import debug
+#Edited: 국선티커 월물변경
+from datetime import datetime
 
 CRYPTO_LITERAL = Literal["BINANCE", "UPBIT", "BYBIT", "BITGET", "OKX"]
 
@@ -245,11 +247,29 @@ class OrderRequest(BaseModel):
         if not values["is_stock"]:
             values["unified_symbol"] = unified_symbol
 
-        #Edited:국선조건 추가
+        #Edited:국선조건 추가, 국선일 경우 base에 KRX거래소 티커 부여
         if values["exchange"] in STOCK_EXCHANGES:
             values["is_stock"] = True
             if values["base"] in korea_futures_ticker:
                 values["is_korea_futures"] = True
+                current_month = datetime.now().month
+                # 분기월 계산 (3, 6, 9, 12월)
+                quarters = [3, 6, 9, 12]
+                next_quarter_month = next((month for month in quarters if month > current_month), None)
+                # 현재 월이 12월을 넘어가는 경우 다음 해의 3월로 설정
+                if not next_quarter_month:
+                    next_quarter_month = 3
+                # 월 형식 맞추기
+                month_code = f"{next_quarter_month:02d}"
+                if values["base"] == "KOSPI200FUT":                    
+                    base = f"101V{month_code}"
+                elif values["base"] == "F_KOSDAQ150":
+                    base = f"106V{month_code}"
+                elif base == "MINIFKOSPI200":
+                    next_month = current_month + 1 if current_month < 12 else 1
+                    # 월 형식 맞추기
+                    month_code = f"{next_month:02d}"
+                    base = f"105V{month_code}"
         # debug("after", values)
         return values
 
