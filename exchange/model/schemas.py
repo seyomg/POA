@@ -262,14 +262,14 @@ class OrderRequest(BaseModel):
                 # 월 형식 맞추기
                 month_code = f"{next_quarter_month:02d}"
                 if values["base"] == "KOSPI200FUT":                    
-                    base = f"101V{month_code}"
+                    values["base"] = f"101V{month_code}"
                 elif values["base"] == "F_KOSDAQ150":
-                    base = f"106V{month_code}"
+                    values["base"] = f"106V{month_code}"
                 elif base == "MINIFKOSPI200":
                     next_month = current_month + 1 if current_month < 12 else 1
                     # 월 형식 맞추기
                     month_code = f"{next_month:02d}"
-                    base = f"105V{month_code}"
+                    values["base"] = f"105V{month_code}"
         # debug("after", values)
         return values
 
