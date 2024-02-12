@@ -195,6 +195,11 @@ class KoreaFuturesOrderBody(AccountInfo):
     FUOP_ITEM_DVSN_CD: str
     ORD_DVSN_CD: Literal[f"{KoreaFuturesOrderType.market}", f"{KoreaFuturesOrderType.limit}"]
 
+#Edited: 국선잔고조회 바디
+class KoreaFuturesInquireBalanceBody(AccountInfo):
+    MGNA_DVSN: "01"
+    EXCC_STAT_CD: "1"
+
 
 class UsaOrderBody(OrderBody):
     ORD_DVSN: str = UsaOrderType.limit.value  # 주문구분
