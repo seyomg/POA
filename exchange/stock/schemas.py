@@ -203,8 +203,8 @@ class KoreaFuturesOrderBody(AccountInfo):
     FUOP_ITEM_DVSN_CD: str
     ORD_DVSN_CD: Literal[f"{KoreaFuturesOrderType.market}", f"{KoreaFuturesOrderType.limit}"]
 
-#Edited: 국선잔고조회 바디
-class KoreaFuturesInquireBalanceBody(AccountInfo):
+#Edited: 국선잔고조회 쿼리
+class KoreaFuturesInquireBalanceQuery(AccountInfo):
     MGNA_DVSN: "01"
     EXCC_STAT_CD: "1"
 

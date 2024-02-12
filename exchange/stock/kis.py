@@ -159,9 +159,29 @@ class KoreaInvestment:
         if exchange == "KRX":
             if any(ticker.startswith(code) for code in futures_codes):
                 headers |= KoreaFuturesBuySellOrderHeaders(**headers)
+                tickers, sides, qtys = self.check_korea_futures_balance(ticker)
+                amount = int(amount)
                 if side == "buy":
+                    for idx, ticker_in_balance in enumerate(tickers):
+                        balance_amount = int(qtys[idx])
+                        if sides[idx] == "SLL":                           
+                            if amount>0:
+                                if amount>=balance_amount:
+                                    body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="02", SHTN_PDNO=ticker_in_balance, ORD_QTY=str(balance_amount), ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
+                                    amount -= balance_amount                                   
+                                elif amount < balance_amount:
+                                    body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="02", SHTN_PDNO=ticker_in_balance, ORD_QTY=str(amount), ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
+                                    amount = 0
+                            else:
+                                break
+                        elif sides[idx] == "BUY"and not ticker_in_balance == ticker:
+                            body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="01", SHTN_PDNO=ticker_in_balance, ORD_QTY=str(balance_amount), ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
+                            amount += balance_amount
+
+                    if amount > 0:
+                        body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="02", SHTN_PDNO=ticker, ORD_QTY=str(amount), ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
                     #일단 계약수는 1로 제한
-                    body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="02", SHTN_PDNO=ticker, ORD_QTY="1", ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
+                    # body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="02", SHTN_PDNO=ticker, ORD_QTY="1", ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
                 else:
                     #일단 계약수는 1로 제한
                     body |= KoreaFuturesOrderBody(**body, SLL_BUY_DVSN_CD="01", SHTN_PDNO=ticker, ORD_QTY="1", ORD_DVSN_CD=f"{KoreaFuturesOrderType.market}")
@@ -259,6 +279,19 @@ class KoreaInvestment:
         except KeyError:
             print(traceback.format_exc())
             return None
+        
+    #Edited: 국선잔고조회 함수
+    def check_korea_futures_balance(self, ticker: str):
+        endpoint = Endpoints.korea_futures_inquire_balance.value
+        headers = KoreaFuturesInquireBalanceHeaders(**self.base_headers).dict()
+        query = KoreaFuturesInquireBalanceQuery(**self.base_order_body).dict()
+        res = self.get(endpoint, query, headers)["output1"]
+        code = ticker[:4]
+        tickers_in_balance = [ticker_in_balance for ticker_in_balance in res["shtn_pdno"] if ticker.startswith(code)]
+        balance_matching_indexes = [index for index, value in enumerate(res["shtn_pdno"]) if value in tickers_in_balance]
+        sides_in_balance = [res["sll_buy_dvsn_name"][index] for index in balance_matching_indexes]
+        qtys_in_balance = [res["cblc_qty"][index] for index in balance_matching_indexes]
+        return tickers_in_balance, sides_in_balance, qtys_in_balance
 
     def open_json(self, path):
         with open(path, "r") as f:
