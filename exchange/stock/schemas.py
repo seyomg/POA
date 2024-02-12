@@ -60,9 +60,12 @@ class TransactionId(str, Enum):
     usa_paper_sell = "VTTT1001U"
 
     korea_ticker = "FHKST01010100"
-    #Edited: 국선시세조회 tr_id
-    korea_futures_ticker = "FHMIF10000000"
     usa_ticker = "HHDFS00000300"
+
+    #Edited: 국선시세조회, 잔고조회 tr_id
+    korea_futures_ticker = "FHMIF10000000"
+    korea_futures_inquire_balance = "CTFO6118R"
+
 
 #Edited: 시세조회 인자는 주식, 국선 동일 but 국선 Description 추가
 class KoreaTickerQuery(BaseModel):
