@@ -28,7 +28,8 @@ class Endpoints(str, Enum):
     #추가
     korea_futures_order_base = "/uapi/domestic-futureoption/v1"
     korea_futures_order = f"{korea_futures_order_base}/trading/order"
-    korea_futures_order_buyable = f"{korea_futures_order_base}trading/inquire-psbl-order"
+    korea_futures_order_buyable = f"{korea_futures_order_base}/trading/inquire-psbl-order"
+    korea_futures_inquire_balance = f"{korea_futures_order_base}/trading/inquire-balance"
 
     usa_order_base = "/uapi/overseas-stock/v1"
     usa_order = f"{usa_order_base}/trading/order"
@@ -64,7 +65,7 @@ class TransactionId(str, Enum):
 
     #Edited: 국선시세조회, 잔고조회 tr_id
     korea_futures_ticker = "FHMIF10000000"
-    korea_futures_inquire_balance = "CTFO6118R"
+    korea_futures_balance_ticker = "CTFO6118R"
 
 
 #Edited: 시세조회 인자는 주식, 국선 동일 but 국선 Description 추가
@@ -145,6 +146,10 @@ class KoreaPaperSellOrderHeaders(BaseHeaders):
 #Edited: 추가됨
 class KoreaFuturesBuySellOrderHeaders(BaseHeaders):
     tr_id: str = TransactionId.korea_futures_buy_and_sell.value
+
+
+class KoreaFuturesInquireBalanceHeaders(BaseHeaders):
+    tr_id: str = TransactionId.korea_futures_balance_ticker.value
 
 
 class UsaBuyOrderHeaders(BaseHeaders):
