@@ -192,7 +192,7 @@ class KoreaMarketOrderBody(KoreaOrderBody):
 
 #Edited: 국선 추가
 class KoreaFuturesOrderBody(AccountInfo):
-    ORD_PRCS_DVSN_CD: "02"
+    ORD_PRCS_DVSN_CD: str = "02"    #Edited: 'str = '추가
     SLL_BUY_DVSN_CD: Literal["01", "02"]     # 01: 매도, 02매수
     SHTN_PDNO: str
     ORD_QTY: str
@@ -205,8 +205,8 @@ class KoreaFuturesOrderBody(AccountInfo):
 
 #Edited: 국선잔고조회 쿼리
 class KoreaFuturesInquireBalanceQuery(AccountInfo):
-    MGNA_DVSN: "01"
-    EXCC_STAT_CD: "1"
+    MGNA_DVSN: str = "01"
+    EXCC_STAT_CD: str = "1"
 
 
 class UsaOrderBody(OrderBody):
