@@ -6,6 +6,8 @@ from enum import Enum
 from devtools import debug
 #Edited: 국선티커 월물변경
 from datetime import datetime
+import calendar
+import pytz
 
 CRYPTO_LITERAL = Literal["BINANCE", "UPBIT", "BYBIT", "BITGET", "OKX"]
 
@@ -184,6 +186,13 @@ def parse_quote(quote: str):
         return quote.replace(".P", "")
     else:
         return quote
+    
+#Edited: 3.12 두번째목요일 수정중
+def find_second_thursday(year, month):                                                      
+    month_calendar = calendar.monthcalendar(year, month)
+    thursdays = [week[calendar.THURSDAY] for week in month_calendar if week[calendar.THURSDAY] != 0]
+    return thursdays[1]  # 두 번째 목요일
+
 
 #Edited: 국선 조건 추가
 class OrderRequest(BaseModel):
@@ -252,21 +261,29 @@ class OrderRequest(BaseModel):
             values["is_stock"] = True
             if values["base"] in korea_futures_ticker:
                 values["is_korea_futures"] = True
-                current_month = datetime.now().month
+                korea_timezone = pytz.timezone('Asia/Seoul')
+                now = datetime.now(korea_timezone)                    #Edited: 3.12 두번째목요일 수정중
                 # 분기월 계산 (3, 6, 9, 12월)
                 quarters = [3, 6, 9, 12]
-                next_quarter_month = next((month for month in quarters if month > current_month), None)
-                # 현재 월이 12월을 넘어가는 경우 다음 해의 3월로 설정
-                if not next_quarter_month:
-                    next_quarter_month = 3
+                current_quarter_last_month = next(q for q in quarters if q >= now.month)
+                second_thursday_current_qlm = find_second_thursday(now.year, current_quarter_last_month)
+                second_thursday_this_month = find_second_thursday(now.year, now.month)
+                next_quarter_last_month = next((q for q in quarters if q > now.month), quarters[0])
                 # 월 형식 맞추기
-                month_code = f"{next_quarter_month:02d}"
+                if now.month == next_quarter_last_month and now.day >= second_thursday_current_qlm:
+                    month_code = f"{next_quarter_last_month:02d}"
+                else:
+                    month_code = f"{current_quarter_last_month}"
                 if values["base"] == "KOSPI200FUT":                    
                     values["base"] = f"101V{month_code}"
                 elif values["base"] == "F_KOSDAQ150":
                     values["base"] = f"106V{month_code}"
-                elif base == "MINIFKOSPI200":
-                    next_month = current_month + 1 if current_month < 12 else 1
+                elif values["base"] == "MINIFKOSPI200":
+                    #Edited: 두번째 목요일 조건 추가
+                    if now.day >= second_thursday_this_month:
+                        next_month = now.month + 1 if now.month < 12 else 1
+                    else:
+                        next_month = now.month
                     # 월 형식 맞추기
                     month_code = f"{next_month:02d}"
                     values["base"] = f"105V{month_code}"
