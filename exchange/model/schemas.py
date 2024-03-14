@@ -273,7 +273,7 @@ class OrderRequest(BaseModel):
                 if now.month == next_quarter_last_month and now.day >= second_thursday_current_qlm:
                     month_code = f"{next_quarter_last_month:02d}"
                 else:
-                    month_code = f"{current_quarter_last_month}"
+                    month_code = f"{current_quarter_last_month:02d}"    #Edited: 3.14 두번째목요일(1차수정)
                 if values["base"] == "KOSPI200FUT":                    
                     values["base"] = f"101V{month_code}"
                 elif values["base"] == "F_KOSDAQ150":
