@@ -270,7 +270,7 @@ class OrderRequest(BaseModel):
                 second_thursday_this_month = find_second_thursday(now.year, now.month)
                 next_quarter_last_month = next((q for q in quarters if q > now.month), quarters[0])
                 # 월 형식 맞추기
-                if now.month == next_quarter_last_month and now.day >= second_thursday_current_qlm:
+                if now.month == current_quarter_last_month and now.day >= second_thursday_current_qlm-1:      #Edited: 3.15. 두번째 목요일(2차수정)
                     month_code = f"{next_quarter_last_month:02d}"
                 else:
                     month_code = f"{current_quarter_last_month:02d}"    #Edited: 3.14 두번째목요일(1차수정)
@@ -280,12 +280,12 @@ class OrderRequest(BaseModel):
                     values["base"] = f"106V{month_code}"
                 elif values["base"] == "MINIFKOSPI200":
                     #Edited: 두번째 목요일 조건 추가
-                    if now.day >= second_thursday_this_month:
-                        next_month = now.month + 1 if now.month < 12 else 1
+                    if now.day >= second_thursday_this_month-1:
+                        month_code = now.month + 1 if now.month < 12 else 1
                     else:
-                        next_month = now.month
+                        month_code = now.month
                     # 월 형식 맞추기
-                    month_code = f"{next_month:02d}"
+                    month_code = f"{month_code:02d}"
                     values["base"] = f"105V{month_code}"
         # debug("after", values)
         return values
